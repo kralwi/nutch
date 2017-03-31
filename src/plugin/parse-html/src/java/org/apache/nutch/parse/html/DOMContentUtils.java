@@ -373,7 +373,8 @@ public class DOMContentUtils {
                 target = attr.getNodeValue();
               } else if ("rel".equalsIgnoreCase(attrName)
                   && "nofollow".equalsIgnoreCase(attr.getNodeValue())) {
-                noFollow = true;
+                // deactivate nofollow, all links are relevant, faz.net f+ too
+                //noFollow = true;
               } else if ("method".equalsIgnoreCase(attrName)
                   && "post".equalsIgnoreCase(attr.getNodeValue())) {
                 post = true;
