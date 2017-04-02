@@ -451,8 +451,8 @@ public class Injector extends NutchTool implements Tool {
       return -1;
     }
 
-    boolean overwrite = false;
-    boolean update = false;
+    boolean overwrite = this.overwrite;
+    boolean update = this.update;
 
     for (int i = 2; i < args.length; i++) {
       if (args[i].equals("-overwrite")) {
