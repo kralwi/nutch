@@ -502,6 +502,17 @@ public class Injector extends NutchTool implements Tool {
       input = new Path(path.toString());
     }
     Map<String, Object> results = new HashMap<>();
+
+    boolean overwrite = false;
+    if (args.containsKey("db.injector.overwrite")) {
+      overwrite = (Boolean)args.get("db.injector.overwrite");
+    }
+
+    boolean update = false;
+    if (args.containsKey("db.injector.update")) {
+      update = (Boolean)args.get("db.injector.update");
+    }
+
     Path crawlDb;
     if (args.containsKey(Nutch.ARG_CRAWLDB)) {
       Object crawldbPath = args.get(Nutch.ARG_CRAWLDB);
@@ -513,7 +524,7 @@ public class Injector extends NutchTool implements Tool {
     } else {
       crawlDb = new Path(crawlId + "/crawldb");
     }
-    inject(crawlDb, input);
+    inject(crawlDb, input, overwrite, update);
     results.put(Nutch.VAL_RESULT, Integer.toString(0));
     return results;
   }
