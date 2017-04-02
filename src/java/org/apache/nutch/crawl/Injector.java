@@ -451,14 +451,14 @@ public class Injector extends NutchTool implements Tool {
       return -1;
     }
 
-    boolean overwrite = this.overwrite;
-    boolean update = this.update;
+    boolean overw = overwrite;
+    boolean upd = update;
 
     for (int i = 2; i < args.length; i++) {
       if (args[i].equals("-overwrite")) {
-        overwrite = true;
+        overw = true;
       } else if (args[i].equals("-update")) {
-        update = true;
+        upd = true;
       } else {
         LOG.info("Injector: Found invalid argument \"" + args[i] + "\"\n");
         usage();
@@ -467,7 +467,7 @@ public class Injector extends NutchTool implements Tool {
     }
 
     try {
-      inject(new Path(args[0]), new Path(args[1]), overwrite, update);
+      inject(new Path(args[0]), new Path(args[1]), overw, upd);
       return 0;
     } catch (Exception e) {
       LOG.error("Injector: " + StringUtils.stringifyException(e));
