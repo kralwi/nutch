@@ -34,13 +34,13 @@
 
 
 
-property>
+<property>
  <name>http.agent.description</name>
  <value>bot description</value>
  <description>Further description of our bot- this text is used in
  the User-Agent header.  It appears in parenthesis after the agent name.
  </description>
-/property>
+</property>
 
 <property>
   <name>http.agent.version</name>
