@@ -191,6 +191,8 @@ public class IndexerMapReduce extends Configured implements
     ParseData parseData = null;
     ParseText parseText = null;
 
+
+
     while (values.hasNext()) {
       final Writable value = values.next().get(); // unwrap
       if (value instanceof Inlinks) {
@@ -281,6 +283,13 @@ public class IndexerMapReduce extends Configured implements
 
     NutchDocument doc = new NutchDocument();
     doc.add("id", key.toString());
+
+    if(dbDatum!=null){
+     long modTime =  dbDatum.getModifiedTime();
+     if(modTime == 0){
+       doc.add("initial_crawl_time", Long.valueOf(modTime));
+     }
+    }
 
     final Metadata metadata = parseData.getContentMeta();
 
