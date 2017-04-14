@@ -183,7 +183,7 @@ public class ElasticIndexWriter implements IndexWriter {
     }
 
     IndexRequest request = new IndexRequest(defaultIndex, type, id).source(source);
-    UpdateRequest upReq = new UpdateRequest(defaultIndex, type, id).upsert(request);
+    UpdateRequest upReq = new UpdateRequest(defaultIndex, type, id).doc(source).upsert(request);
 
     bulkProcessor.add(upReq);
   }
