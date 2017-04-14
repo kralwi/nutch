@@ -97,19 +97,29 @@
   </description>
 </property>
 
-<!-- web db properties -->
-<property>
-  <name>db.fetch.interval.default</name>
-  <value>86400</value>
-  <description>The default number of seconds between re-fetches of a page (30 days).
-  </description>
-</property>
+<!-- disable refetching of items as the fetch date is needed to determine the first occurence -->
+
+  <property>
+    <name>db.fetch.interval.default</name>
+    <value>315360000</value>
+    <description>The default number of seconds between re-fetches of a page (10 years).
+    </description>
+  </property>
+
+  <property>
+    <name>db.fetch.interval.max</name>
+    <value>315360000</value>
+    <description>The maximum number of seconds between re-fetches of a page
+      (10 years). After this period every page in the db will be re-tried, no
+      matter what is its status.
+    </description>
+  </property>
 
 
 
 <property>
   <name>db.fetch.schedule.class</name>
-  <value>org.apache.nutch.crawl.AdaptiveFetchSchedule</value>
+  <value>org.apache.nutch.crawl.DefaultFetchSchedule</value>
   <description>The implementation of fetch schedule. DefaultFetchSchedule simply
   adds the original fetchInterval to the last fetch time, regardless of
   page changes, whereas AdaptiveFetchSchedule (see below) tries to adapt
