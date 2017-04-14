@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -286,9 +287,9 @@ public class IndexerMapReduce extends Configured implements
 
     if(dbDatum!=null){
      long modTime =  dbDatum.getModifiedTime();
-      long fetchTime =  dbDatum.getFetchTime();
+
      if(modTime == 0){
-       doc.add("initial_crawl_time", new Date(fetchTime));
+       doc.add("initial_crawl_time",new Date(datum.getFetchTime());
      }
     }
 
