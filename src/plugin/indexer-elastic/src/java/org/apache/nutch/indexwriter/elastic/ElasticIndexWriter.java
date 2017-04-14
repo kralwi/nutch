@@ -38,6 +38,7 @@ import org.elasticsearch.action.bulk.BackoffPolicy;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.ByteSizeUnit;
@@ -167,7 +168,7 @@ public class ElasticIndexWriter implements IndexWriter {
 
   @Override
   public void write(NutchDocument doc) throws IOException {
-    LOG.debug("Update document {}", doc);
+    LOG.debug("Write document {}", doc);
     String id = (String) doc.getFieldValue("id");
     String type = doc.getDocumentMeta().get("type");
     if (type == null)
@@ -182,19 +183,21 @@ public class ElasticIndexWriter implements IndexWriter {
     }
 
     IndexRequest request = new IndexRequest(defaultIndex, type, id).source(source);
-    bulkProcessor.add(request);
+    UpdateRequest upReq = new UpdateRequest(defaultIndex, type, id).upsert(request);
+
+    bulkProcessor.add(upReq);
   }
 
   @Override
   public void delete(String key) throws IOException {
-    LOG.debug("Update document");
+    LOG.debug("Delete document");
     DeleteRequest request = new DeleteRequest(defaultIndex, "doc", key);
     bulkProcessor.add(request);
   }
 
   @Override
   public void update(NutchDocument doc) throws IOException {
-    LOG.debug("Update document");
+    LOG.debug("Update document {}", doc);
     write(doc);
   }
 
