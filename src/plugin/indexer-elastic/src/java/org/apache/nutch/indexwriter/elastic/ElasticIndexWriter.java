@@ -167,6 +167,7 @@ public class ElasticIndexWriter implements IndexWriter {
 
   @Override
   public void write(NutchDocument doc) throws IOException {
+
     String id = (String) doc.getFieldValue("id");
     String type = doc.getDocumentMeta().get("type");
     if (type == null)
@@ -192,6 +193,7 @@ public class ElasticIndexWriter implements IndexWriter {
 
   @Override
   public void update(NutchDocument doc) throws IOException {
+    LOG.debug("Update document");
     write(doc);
   }
 
