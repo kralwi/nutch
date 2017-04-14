@@ -286,8 +286,9 @@ public class IndexerMapReduce extends Configured implements
 
     if(dbDatum!=null){
      long modTime =  dbDatum.getModifiedTime();
+      long fetchTime =  dbDatum.getFetchTime();
      if(modTime == 0){
-       doc.add("initial_crawl_time", Long.valueOf(modTime));
+       doc.add("initial_crawl_time", Long.valueOf(fetchTime));
      }
     }
 
