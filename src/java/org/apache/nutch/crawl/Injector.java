@@ -158,7 +158,7 @@ public class Injector extends NutchTool implements Tool {
 
         String metaname = split.substring(0, indexEquals);
         String metavalue = split.substring(indexEquals + 1);
-
+        LOG.info("Injector.processMetaData: {} = {}",metaname, metavalue);
         try {
           if (metaname.equals(nutchScoreMDName)) {
             datum.setScore(Float.parseFloat(metavalue));
