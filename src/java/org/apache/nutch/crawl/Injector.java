@@ -164,6 +164,7 @@ public class Injector extends NutchTool implements Tool {
             datum.setScore(Float.parseFloat(metavalue));
           } else if (metaname.equals(nutchFetchIntervalMDName)) {
             datum.setFetchInterval(Integer.parseInt(metavalue));
+            LOG.info("Injector.processMetaData: setFetchInterval for {}",datum);
           } else if (metaname.equals(nutchFixedFetchIntervalMDName)) {
             int fixedInterval = Integer.parseInt(metavalue);
             if (fixedInterval > -1) {
@@ -172,6 +173,7 @@ public class Injector extends NutchTool implements Tool {
               datum.getMetaData().put(Nutch.WRITABLE_FIXED_INTERVAL_KEY,
                   new FloatWritable(fixedInterval));
               datum.setFetchInterval(fixedInterval);
+              LOG.info("Injector.processMetaData: setFetchInterval (fixed) for {}",datum);
             }
           } else {
             datum.getMetaData().put(new Text(metaname), new Text(metavalue));
