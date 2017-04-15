@@ -289,7 +289,7 @@ public class IndexerMapReduce extends Configured implements
      long modTime =  dbDatum.getModifiedTime();
 
      if(modTime == 0){
-       doc.add("initial_crawl_time",new Date(dbDatum.getFetchTime()));
+       doc.add("initial_crawl_time",new Date(System.currentTimeMillis()));
      }
     }
 
