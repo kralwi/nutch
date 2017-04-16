@@ -285,9 +285,10 @@ public class IndexerMapReduce extends Configured implements
     NutchDocument doc = new NutchDocument();
     doc.add("id", key.toString());
 
+    LOG.info("INITIAL_CRAW_TIME: dbDatum {}", dbDatum);
     if(dbDatum!=null){
      long modTime =  dbDatum.getModifiedTime();
-     LOG.info("adding initial crawl time, modtime {}", modTime);
+
      if(modTime == 0){
        doc.add("initial_crawl_time",new Date(System.currentTimeMillis()));
      }
