@@ -284,14 +284,14 @@ public class IndexerMapReduce extends Configured implements
 
     NutchDocument doc = new NutchDocument();
     doc.add("id", key.toString());
-    doc.add("initial_crawl_time",new Date(System.currentTimeMillis()));
 
-    LOG.info("INITIAL_CRAW_TIME: dbDatum {}", dbDatum);
+
+    //LOG.info("INITIAL_CRAW_TIME: dbDatum {}", dbDatum);
     if(dbDatum!=null){
      long modTime =  dbDatum.getModifiedTime();
 
      if(modTime == 0){
-       doc.add("initial_crawl_time",new Date(System.currentTimeMillis()));
+       doc.add("initial_crawl_time",new Date(dbDatum.getFetchTime()));
      }
     }
 
