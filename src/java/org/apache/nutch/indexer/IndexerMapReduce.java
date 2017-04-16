@@ -286,11 +286,12 @@ public class IndexerMapReduce extends Configured implements
     doc.add("id", key.toString());
 
 
-    //LOG.info("INITIAL_CRAW_TIME: dbDatum {}", dbDatum);
+    LOG.info("INITIAL_CRAW_TIME: dbDatum {}, fetchDatum", dbDatum, fetchDatum);
     if(dbDatum!=null){
      long modTime =  dbDatum.getModifiedTime();
+     long fetchTime = dbDatum.getFetchTime();
 
-     if(modTime == 0){
+     if(modTime != 0){
        doc.add("initial_crawl_time",dbDatum.getFetchTime());
      }
     }
