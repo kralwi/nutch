@@ -288,11 +288,14 @@ public class IndexerMapReduce extends Configured implements
 
     LOG.info("INITIAL_CRAW_TIME: dbDatum {}, fetchDatum", dbDatum, fetchDatum);
     if(dbDatum!=null){
+     LongWritable initial_fetch_time = (LongWritable) dbDatum.getMetaData().get(
+              (new Text("initial_fetch_time"));
      long modTime =  dbDatum.getModifiedTime();
      long fetchTime = dbDatum.getFetchTime();
+     if(initial_fetch_time!=null) {
+       long initialFetchTime = initial_fetch_time.get()
+       doc.add("initial_crawl_time",new Date( initialFetchTime));
 
-     if(modTime != 0){
-       doc.add("initial_crawl_time",dbDatum.getFetchTime());
      }
     }
 
