@@ -195,7 +195,7 @@ public class Generator extends NutchTool implements Tool {
       long modTime = crawlDatum.getModifiedTime();
       if( modTime == 0){
         LOG.debug("modTime == 0, setting  meta initial_fetch_time to {}", crawlDatum.getFetchTime());
-        crawlDatum.getMetaData().put(new Text("initial_fetch_time"),  crawlDatum.getFetchTime());
+        crawlDatum.getMetaData().put(new Text("initial_fetch_time"), new LongWritable (crawlDatum.getFetchTime()));
       }
 
       // check fetch schedule
