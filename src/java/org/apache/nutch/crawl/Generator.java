@@ -192,6 +192,12 @@ public class Generator extends NutchTool implements Tool {
       }
       CrawlDatum crawlDatum = value;
 
+      long modTime = crawlDatum.getModifiedTime();
+      if( modTime == 0){
+        LOG.debug("modTime == 0, setting  meta initial_fetch_time to {}", crawlDatum.getFetchTime());
+        crawlDatum.getMetaData().put("initial_fetch_time",  crawlDatum.getFetchTime());
+      }
+
       // check fetch schedule
       if (!schedule.shouldFetch(url, crawlDatum, curTime)) {
         LOG.debug("-shouldFetch rejected '" + url + "', fetchTime="
