@@ -101,7 +101,7 @@
 
   <property>
     <name>db.fetch.interval.default</name>
-    <value>315360000</value>
+    <value>86400</value>
     <description>The default number of seconds between re-fetches of a page (10 years).
     </description>
   </property>
@@ -119,7 +119,7 @@
 
 <property>
   <name>db.fetch.schedule.class</name>
-  <value>org.apache.nutch.crawl.DefaultFetchSchedule</value>
+  <value>org.apache.nutch.crawl.AdaptiveFetchSchedule</value>
   <description>The implementation of fetch schedule. DefaultFetchSchedule simply
   adds the original fetchInterval to the last fetch time, regardless of
   page changes, whereas AdaptiveFetchSchedule (see below) tries to adapt
@@ -417,7 +417,7 @@ r of the URLS in the fetch list
 
 <property>
   <name>plugin.includes</name>
-  <value>protocol-httpclient|urlfilter-regex|extractor|parse-(html|tika)|index-(basic|anchh
+  <value>urlmeta|protocol-httpclient|urlfilter-regex|extractor|parse-(html|tika)|index-(basic|anchh
 or)|indexer-elastic|scoring-depth|urlnormalizer-(pass|regex|basic)</value>
   <description>Regular expression naming plugin directory names to
   include.  Any plugin not matching this expression is excluded.
@@ -434,5 +434,23 @@ cation based focused crawler.
   <name>extractor.file</name>
   <value>extractors.xml</value>
 </property>
+
+
+<property>
+    <name>urlmeta.tags</name>
+    <value>site</value>
+    <description>
+      To be used in conjunction with features introduced in NUTCH-655, which allows
+      for custom metatags to be injected alongside your crawl URLs. Specifying those
+      custom tags here will allow for their propagation into a pages outlinks, as
+      well as allow for them to be included as part of an index.
+      Values should be comma-delimited. ("tag1,tag2,tag3") Do not pad the tags with
+      white-space at their boundaries, if you are using anything earlier than Hadoop-0.21.
+    </description>
+  </property>
+
+
+
+
 </configuration>
 
