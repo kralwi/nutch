@@ -165,8 +165,9 @@ function __bin_nutch {
 
 
 # initial injection
+# overwrite to force recrawl of seed urls even when last try failed e.g. Address already in use (Bind failed)
 echo "Injecting seed URLs"
-__bin_nutch inject "$CRAWL_PATH"/crawldb "$SEEDDIR"
+__bin_nutch inject "$CRAWL_PATH"/crawldb "$SEEDDIR" -overwrite
 
 # main loop : rounds of generate - fetch - parse - update
 for ((a=1; ; a++))
