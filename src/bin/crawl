@@ -135,7 +135,7 @@ fi
 
 # note that some of the options listed here could be set in the
 # corresponding hadoop site xml param file
-commonOptions="-D mapreduce.job.reduces=$numTasks -D mapred.child.java.opts=-Xmx1000m -D mapreduce.reduce.speculative=false -D mapreduce.map.speculative=false -D mapreduce.map.output.compress=true"
+commonOptions="-D mapreduce.job.reduces=$numTasks -D mapred.child.java.opts=-Xmx4000m -D mapreduce.reduce.speculative=false -D mapreduce.map.speculative=false -D mapreduce.map.output.compress=true"
 
  # check that hadoop can be found on the path
 if [ $mode = "distributed" ]; then
@@ -242,7 +242,7 @@ do
 # note that the link inversion - indexing routine can be done within the main loop
 # on a per segment basis
   echo "Link inversion"
-  __bin_nutch invertlinks "$CRAWL_PATH"/linkdb "$CRAWL_PATH"/segments/$SEGMENT
+  __bin_nutch invertlinks "$CRAWL_PATH"/linkdb "$CRAWL_PATH"/segments/$SEGMENT -noNormalize -noFilter
 
   echo "Dedup on crawldb"
   __bin_nutch dedup "$CRAWL_PATH"/crawldb
