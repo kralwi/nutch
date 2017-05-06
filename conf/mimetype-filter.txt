@@ -33,3 +33,4 @@
 
 # allow only documents with a text/html mimetype
 text/html
+application/xhtml+xml
