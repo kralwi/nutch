@@ -286,6 +286,15 @@ public class CrawlDbReducer implements
       }
       result = schedule.setPageRetrySchedule(key, result, prevFetchTime,
           prevModifiedTime, fetch.getFetchTime());
+
+    // use defined interval for retrying as the default refetchinterval is set to  very long time
+      // and the retry will not happen
+      long definedFetchInterval =  result.getFetchInterval();
+      // if fetch interval is larger than one day
+      if(definedFetchInterval > (24*60*60*1000)){
+        result.setFetchTime(fetch.getFetchTime() + (12 * 60 * 60 * 1000));
+      }
+
       if (result.getRetriesSinceFetch() < retryMax) {
         result.setStatus(CrawlDatum.STATUS_DB_UNFETCHED);
       } else {
