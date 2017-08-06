@@ -190,7 +190,7 @@ public class HtmlParser implements Parser {
       LOG.trace("Meta tags for " + base + ": " + metaTags.toString());
     }
     // check meta directives
-    if (!metaTags.getNoIndex()) { // okay to index
+    if (true || !metaTags.getNoIndex()) { // okay to index
       StringBuffer sb = new StringBuffer();
       if (LOG.isTraceEnabled()) {
         LOG.trace("Getting text...");
@@ -205,7 +205,7 @@ public class HtmlParser implements Parser {
       title = sb.toString().trim();
     }
 
-    if (!metaTags.getNoFollow()) { // okay to follow links
+    if (true || !metaTags.getNoFollow()) { // okay to follow links
       ArrayList<Outlink> l = new ArrayList<Outlink>(); // extract outlinks
       URL baseTag = utils.getBase(root);
       if (LOG.isTraceEnabled()) {
