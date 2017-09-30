@@ -61,7 +61,6 @@ import java.util.Random;
  * CrawlDb. Useful for bootstrapping a Nutch crawl. The URL files contain one
  * URL per line, optionally followed by custom metadata separated by tabs with
  * the metadata key separated from the corresponding value by '='.
- * </p>
  * <p>
  * Note, that some metadata keys are reserved:
  * <dl>
@@ -73,18 +72,19 @@ import java.util.Random;
  * <dd>allows to set a custom fetch interval for a specific URL that is not
  * changed by AdaptiveFetchSchedule</dd>
  * </dl>
- * </p>
  * <p>
  * Example:
  * 
  * <pre>
  *  http://www.nutch.org/ \t nutch.score=10 \t nutch.fetchInterval=2592000 \t userType=open_source
  * </pre>
- * </p>
  **/
 public class Injector extends NutchTool implements Tool {
   private static final Logger LOG = LoggerFactory
       .getLogger(MethodHandles.lookup().lookupClass());
+
+  /** property to pass value of command-line option -filterNormalizeAll to mapper */
+  public static final String URL_FILTER_NORMALIZE_ALL = "crawldb.inject.filter.normalize.all";
 
   /** metadata key reserved for setting a custom score for a specific URL */
   public static String nutchScoreMDName = "nutch.score";
@@ -114,13 +114,21 @@ public class Injector extends NutchTool implements Tool {
     private long curTime;
     private boolean url404Purging;
     private String scope;
+    private boolean filterNormalizeAll = false;
 
     public void setup(Context context) {
       Configuration conf = context.getConfiguration();
-      scope = conf.get(URL_NORMALIZING_SCOPE, URLNormalizers.SCOPE_INJECT);
-      urlNormalizers = new URLNormalizers(conf, scope);
+      boolean normalize = conf.getBoolean(CrawlDbFilter.URL_NORMALIZING, true);
+      boolean filter = conf.getBoolean(CrawlDbFilter.URL_FILTERING, true);
+      filterNormalizeAll = conf.getBoolean(URL_FILTER_NORMALIZE_ALL, false);
+      if (normalize) {
+        scope = conf.get(URL_NORMALIZING_SCOPE, URLNormalizers.SCOPE_INJECT);
+        urlNormalizers = new URLNormalizers(conf, scope);
+      }
       interval = conf.getInt("db.fetch.interval.default", 2592000);
-      filters = new URLFilters(conf);
+      if (filter) {
+        filters = new URLFilters(conf);
+      }
       scfilters = new ScoringFilters(conf);
       scoreInjected = conf.getFloat("db.score.injected", 1.0f);
       curTime = conf.getLong("injector.current.time",
@@ -132,8 +140,10 @@ public class Injector extends NutchTool implements Tool {
     private String filterNormalize(String url) {
       if (url != null) {
         try {
-          url = urlNormalizers.normalize(url, scope); // normalize the url
-          url = filters.filter(url); // filter the url
+          if (urlNormalizers != null)
+            url = urlNormalizers.normalize(url, scope); // normalize the url
+          if (filters != null)
+            url = filters.filter(url); // filter the url
         } catch (Exception e) {
           LOG.warn("Skipping " + url + ":" + e);
           url = null;
@@ -227,12 +237,20 @@ public class Injector extends NutchTool implements Tool {
         CrawlDatum datum = (CrawlDatum) value;
 
         // remove 404 urls
-        if (url404Purging && CrawlDatum.STATUS_DB_GONE == datum.getStatus())
+        if (url404Purging && CrawlDatum.STATUS_DB_GONE == datum.getStatus()) {
+          context.getCounter("injector", "urls_purged_404").increment(1);
           return;
+        }
 
-        String url = filterNormalize(key.toString());
-        if (url != null) {
-          key.set(url);
+        if (filterNormalizeAll) {
+          String url = filterNormalize(key.toString());
+          if (url == null) {
+            context.getCounter("injector", "urls_purged_filter").increment(1);
+          } else {
+            key.set(url);
+            context.write(key, datum);
+          }
+        } else {
           context.write(key, datum);
         }
       }
@@ -263,13 +281,13 @@ public class Injector extends NutchTool implements Tool {
      * Merge the input records as per rules below :
      * 
      * <pre>
-     * 1. If there is ONLY new injected record ==> emit injected record
-     * 2. If there is ONLY old record          ==> emit existing record
+     * 1. If there is ONLY new injected record ==&gt; emit injected record
+     * 2. If there is ONLY old record          ==&gt; emit existing record
      * 3. If BOTH new and old records are present:
-     *    (a) If 'overwrite' is true           ==> emit injected record
+     *    (a) If 'overwrite' is true           ==&gt; emit injected record
      *    (b) If 'overwrite' is false :
-     *        (i)  If 'update' is false        ==> emit existing record
-     *        (ii) If 'update' is true         ==> update existing record and emit it
+     *        (i)  If 'update' is false        ==&gt; emit existing record
+     *        (ii) If 'update' is true         ==&gt; update existing record and emit it
      * </pre>
      * 
      * For more details @see NUTCH-1405
@@ -331,6 +349,13 @@ public class Injector extends NutchTool implements Tool {
 
   public void inject(Path crawlDb, Path urlDir, boolean overwrite,
       boolean update) throws IOException, ClassNotFoundException, InterruptedException {
+    inject(crawlDb, urlDir, overwrite, update, true, true, false);
+  }
+
+  public void inject(Path crawlDb, Path urlDir, boolean overwrite,
+      boolean update, boolean normalize, boolean filter,
+      boolean filterNormalizeAll)
+      throws IOException, ClassNotFoundException, InterruptedException {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     long start = System.currentTimeMillis();
 
@@ -346,10 +371,13 @@ public class Injector extends NutchTool implements Tool {
     conf.setLong("injector.current.time", System.currentTimeMillis());
     conf.setBoolean("db.injector.overwrite", overwrite);
     conf.setBoolean("db.injector.update", update);
+    conf.setBoolean(CrawlDbFilter.URL_NORMALIZING, normalize);
+    conf.setBoolean(CrawlDbFilter.URL_FILTERING, filter);
+    conf.setBoolean(URL_FILTER_NORMALIZE_ALL, filterNormalizeAll);
     conf.setBoolean("mapreduce.fileoutputcommitter.marksuccessfuljobs", false);
 
     // create all the required paths
-    FileSystem fs = FileSystem.get(conf);
+    FileSystem fs = crawlDb.getFileSystem(conf);
     Path current = new Path(crawlDb, CrawlDb.CURRENT_NAME);
     if (!fs.exists(current))
       fs.mkdirs(current);
@@ -358,8 +386,7 @@ public class Injector extends NutchTool implements Tool {
         "crawldb-" + Integer.toString(new Random().nextInt(Integer.MAX_VALUE)));
 
     // lock an existing crawldb to prevent multiple simultaneous updates
-    Path lock = new Path(crawlDb, CrawlDb.LOCK_NAME);
-    LockUtil.createLockFile(fs, lock, false);
+    Path lock = CrawlDb.lock(conf, crawlDb, false);
 
     // configure job
     Job job = Job.getInstance(conf, "inject " + urlDir);
@@ -390,6 +417,10 @@ public class Injector extends NutchTool implements Tool {
             .findCounter("injector", "urls_filtered").getValue();
         long urlsMerged = job.getCounters()
             .findCounter("injector", "urls_merged").getValue();
+        long urlsPurged404= job.getCounters()
+            .findCounter("injector", "urls_purged_404").getValue();
+        long urlsPurgedFilter= job.getCounters()
+            .findCounter("injector", "urls_purged_filter").getValue();
         LOG.info("Injector: Total urls rejected by filters: " + urlsFiltered);
         LOG.info(
             "Injector: Total urls injected after normalization and filtering: "
@@ -398,6 +429,15 @@ public class Injector extends NutchTool implements Tool {
             + urlsMerged);
         LOG.info("Injector: Total new urls injected: "
             + (urlsInjected - urlsMerged));
+        if (filterNormalizeAll) {
+          LOG.info("Injector: Total urls removed from CrawlDb by filters: {}",
+              urlsPurgedFilter);
+        }
+        if (conf.getBoolean(CrawlDb.CRAWLDB_PURGE_404, false)) {
+          LOG.info(
+              "Injector: Total urls with status gone removed from CrawlDb (db.update.purge.404): {}",
+              urlsPurged404);
+        }
 
         long end = System.currentTimeMillis();
         LOG.info("Injector: finished at " + sdf.format(end) + ", elapsed: "
@@ -407,14 +447,14 @@ public class Injector extends NutchTool implements Tool {
       if (fs.exists(tempCrawlDb)) {
         fs.delete(tempCrawlDb, true);
       }
-      LockUtil.removeLockFile(fs, lock);
+      LockUtil.removeLockFile(conf, lock);
       throw e;
     }
   }
 
   public void usage() {
     System.err.println(
-        "Usage: Injector <crawldb> <url_dir> [-overwrite] [-update]\n");
+        "Usage: Injector [-D...] <crawldb> <url_dir> [-overwrite|-update] [-noFilter] [-noNormalize] [-filterNormalizeAll]\n");
     System.err.println(
         "  <crawldb>\tPath to a crawldb directory. If not present, a new one would be created.");
     System.err.println(
@@ -440,6 +480,20 @@ public class Injector extends NutchTool implements Tool {
         " -overwrite\tOverwite existing crawldb records by the injected records. Has precedence over 'update'");
     System.err.println(
         " -update   \tUpdate existing crawldb records with the injected records. Old metadata is preserved");
+    System.err.println();
+    System.err.println(
+        " -nonormalize\tDo not normalize URLs before injecting");
+    System.err.println(
+        " -nofilter \tDo not apply URL filters to injected URLs");
+    System.err.println(
+        " -filterNormalizeAll\n"
+        + "           \tNormalize and filter all URLs including the URLs of existing CrawlDb records");
+    System.err.println();
+    System.err.println(
+        " -D...     \tset or overwrite configuration property (property=value)");
+    System.err.println(
+        " -Ddb.update.purge.404=true\n"
+        + "           \tremove URLs with status gone (404) from CrawlDb");
   }
 
   public static void main(String[] args) throws Exception {
@@ -455,12 +509,21 @@ public class Injector extends NutchTool implements Tool {
 
     boolean overwrite = false;
     boolean update = false;
+    boolean normalize = true;
+    boolean filter = true;
+    boolean filterNormalizeAll = false;
 
     for (int i = 2; i < args.length; i++) {
       if (args[i].equals("-overwrite")) {
         overwrite = true;
       } else if (args[i].equals("-update")) {
         update = true;
+      } else if (args[i].equals("-noNormalize")) {
+        normalize = false;
+      } else if (args[i].equals("-noFilter")) {
+        filter = false;
+      } else if (args[i].equals("-filterNormalizeAll")) {
+        filterNormalizeAll = true;
       } else {
         LOG.info("Injector: Found invalid argument \"" + args[i] + "\"\n");
         usage();
@@ -469,7 +532,8 @@ public class Injector extends NutchTool implements Tool {
     }
 
     try {
-      inject(new Path(args[0]), new Path(args[1]), overwrite, update);
+      inject(new Path(args[0]), new Path(args[1]), overwrite, update, normalize,
+          filter, filterNormalizeAll);
       return 0;
     } catch (Exception e) {
       LOG.error("Injector: " + StringUtils.stringifyException(e));

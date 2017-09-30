@@ -36,6 +36,8 @@
   </publications>
 
   <dependencies>
+    <dependency org="com.rabbitmq" name="amqp-client" rev="3.6.5"/>
+    <dependency org="com.google.code.gson" name="gson" rev="2.7"/>
   </dependencies>
   
 </ivy-module>
