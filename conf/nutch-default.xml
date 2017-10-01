@@ -2384,6 +2384,10 @@
   </description>
 </property>
 
+ <property>
+  <name>rabbitmq.queue.routingkey</name>
+  <value></value>
+  <description>
     Default is 'fanout.key'
     The routingKey used by publisher to publish messages to specific queues. 
     If the exchange type is "fanout", then this property is ignored.
